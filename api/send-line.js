@@ -3,7 +3,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    const CHANNEL_ACCESS_TOKEN = 'วาง_CHANNEL_ACCESS_TOKEN_เดิมของพี่บอมตรงนี้';
+    const CHANNEL_ACCESS_TOKEN = 'X4cZS0+Cmqx0605CyzUgJthk6LekJBvbmruhcuFY/V01lUstJbGQ5qLgV2z1BCDX/flD5hvn06X0D07mcjNbFqo8Qr1tTsHg1fUghQKg1ln7STHNBOoVhqvHVM33Qk3ZdP/vCj3DeqGYj7SoGpqe6wdB04t89/1O/w1cDnyilFU=';
 
     // ดึงข้อมูลเหตุการณ์ที่ส่งมาจาก LINE
     const events = req.body.events || [];
