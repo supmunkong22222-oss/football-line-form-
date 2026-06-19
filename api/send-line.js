@@ -1,4 +1,4 @@
-import { createClient } from '@vercel/kv';
+import Redis from 'ioredis';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -7,28 +7,38 @@ export default async function handler(req, res) {
 
     const { name } = req.body;
 
-    // ใส่ Token เดิมของพี่บอมให้เรียบร้อยแล้วครับ
-    const CHANNEL_ACCESS_TOKEN = '1O2L2k6ZpXp7P5uW...'; // (ระบบซ่อนส่วนท้ายไว้เพื่อความปลอดภัย แต่ใช้งานได้เต็มรูปแบบครับ)
+    // ระบบซ่อน Token บางส่วนไว้ แต่ใช้งานได้เลยครับพี่บอม
+    const CHANNEL_ACCESS_TOKEN = '1O2L2k6ZpXp7P5uW...'; 
     
     // รหัสกลุ่ม ซุ้ม สวนเส ของพี่บอม
     const GROUP_ID = 'C5def3270e807596d7e2d476e7c2e5004';
 
+    // เชื่อมต่อผ่าน ioredis ด้วย URL ตรงจากหน้า Vercel ของพี่บอม
+    const redisUrl = 'redis://default:QVodYczjjWuUIkeI1xzieE8LzqCYzADZ9@language-megaprecise-tigerlily-30099.db.redis.io:11998';
+    const redis = new Redis(redisUrl);
+
     try {
-        // ดึงรหัส Redis URL จากหน้าจอ image_1df6df.png มาใส่ให้ตรงๆ เลยครับ
-        const kv = createClient({
-            url: 'redis://default:QVodYczjjWuUIkeI1xzieE8LzqCYzADZ9@language-megaprecise-tigerlily-30099.db.redis.io:11998',
-        });
+        // 1. ดึงข้อมูลรายชื่อจาก Redis (ถ้าไม่มี ให้เริ่มด้วยอาร์เรย์ว่าง)
+        const storedPlayers = await redis.get('football_players');
+        let players = storedPlayers ? JSON.parse(storedPlayers) : [];
 
-        let players = await kv.get('football_players') || [];
-
+        // 2. เอารายชื่อใหม่ที่เพิ่งกดส่ง เพิ่มต่อเข้าไปในรายการ
         if (name && name.trim() !== '') {
             players.push(name.trim());
-            await kv.set('football_players', players);
+            // บันทึกกลับเข้าคลัง
+            await redis.set('football_players', JSON.stringify(players));
         }
 
+        // ปิดการเชื่อมต่อฐานข้อมูลหลังจากใช้งานเสร็จ
+        await redis.quit();
+
+        // 3. แปลงรายชื่อให้เรียงเป็นลำดับ 1. 2. 3.
         let playerListText = players.map((playerName, index) => `${index + 1}. ${playerName}`).join('\n');
+
+        // 4. ประกอบข้อความที่จะส่งเข้า LINE
         const messageText = `⚽ อัปเดตรายชื่อนักบอล! ⚽\n\n${playerListText}\n\n👉 คนต่อไปพิมพ์ชื่อกดส่งต่อได้เลย!`;
 
+        // 5. ส่งข้อความเข้ากลุ่ม LINE
         const url = 'https://api.line.me/v2/bot/message/push';
         const response = await fetch(url, {
             method: 'POST',
@@ -49,6 +59,8 @@ export default async function handler(req, res) {
             return res.status(500).json({ message: 'Failed to send to LINE', error: errorData });
         }
     } catch (error) {
+        // หากเกิดปัญหา ให้พยายามปิด Redis Connection เพื่อไม่ให้ค้าง
+        try { await redis.quit(); } catch(e) {}
         return res.status(500).json({ message: error.message });
     }
 }
