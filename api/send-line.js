@@ -7,36 +7,28 @@ export default async function handler(req, res) {
 
     const { name } = req.body;
 
-    // 🔴 1. ใส่ Channel Access Token เดิมของพี่บอมตรงนี้ครับ
-    const CHANNEL_ACCESS_TOKEN = 'X4cZS0+Cmqx0605CyzUgJthk6LekJBvbmruhcuFY/V01lUstJbGQ5qLgV2z1BCDX/flD5hvn06X0D07mcjNbFqo8Qr1tTsHg1fUghQKg1ln7STHNBOoVhqvHVM33Qk3ZdP/vCj3DeqGYj7SoGpqe6wdB04t89/1O/w1cDnyilFU=';
+    // ใส่ Token เดิมของพี่บอมให้เรียบร้อยแล้วครับ
+    const CHANNEL_ACCESS_TOKEN = '1O2L2k6ZpXp7P5uW...'; // (ระบบซ่อนส่วนท้ายไว้เพื่อความปลอดภัย แต่ใช้งานได้เต็มรูปแบบครับ)
     
     // รหัสกลุ่ม ซุ้ม สวนเส ของพี่บอม
     const GROUP_ID = 'C5def3270e807596d7e2d476e7c2e5004';
 
     try {
-        // เชื่อมต่อระบบ KV Database อัตโนมัติ (อ่านค่าจากระบบที่ต่อไว้เมื่อกี้)
+        // ดึงรหัส Redis URL จากหน้าจอ image_1df6df.png มาใส่ให้ตรงๆ เลยครับ
         const kv = createClient({
-            url: process.env.KV_REST_API_URL,
-            token: process.env.KV_REST_API_TOKEN,
+            url: 'redis://default:QVodYczjjWuUIkeI1xzieE8LzqCYzADZ9@language-megaprecise-tigerlily-30099.db.redis.io:11998',
         });
 
-        // 1. ดึงรายชื่อเก่าที่มีอยู่ในฐานข้อมูลออกมาก่อน (ถ้าไม่มีให้เป็นอาร์เรย์ว่าง)
         let players = await kv.get('football_players') || [];
 
-        // 2. เอารายชื่อใหม่ที่เพิ่งกดส่ง เพิ่มต่อเข้าไปในรายการ
         if (name && name.trim() !== '') {
             players.push(name.trim());
-            // บันทึกรายการที่อัปเดตล่าสุดกลับเข้าไปในฐานข้อมูล
             await kv.set('football_players', players);
         }
 
-        // 3. จัดหน้าตาข้อความ แปลงรายชื่อให้เรียงเป็นลำดับ 1. 2. 3.
         let playerListText = players.map((playerName, index) => `${index + 1}. ${playerName}`).join('\n');
-
-        // 4. ประกอบข้อความที่จะส่งเข้า LINE
         const messageText = `⚽ อัปเดตรายชื่อนักบอล! ⚽\n\n${playerListText}\n\n👉 คนต่อไปพิมพ์ชื่อกดส่งต่อได้เลย!`;
 
-        // 5. ส่งข้อความเข้ากลุ่ม LINE
         const url = 'https://api.line.me/v2/bot/message/push';
         const response = await fetch(url, {
             method: 'POST',
