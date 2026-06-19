@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบลงชื่อทีมฟุตบอล P.T.K.</title>
+    <!-- นำเข้า Tailwind CSS เพื่อความสวยงาม -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+        <!-- ส่วนหัว -->
+        <div class="text-center mb-6">
+            <div class="text-4xl mb-2">⚽</div>
+            <h1 class="text-xl font-bold text-emerald-400">ลงชื่อเข้าร่วมทีมฟุตบอล P.T.K.</h1>
+            <p class="text-xs text-slate-400 mt-1">กรอกชื่อแล้วรายชื่อจะเด้งเข้ากลุ่ม LINE ทันที</p>
+        </div>
+
+        <!-- ฟอร์มกรอกชื่อ -->
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">ชื่อ-นามสกุล หรือ ชื่อเล่น</label>
+                <input type="text" id="playerName" placeholder="ตัวอย่าง: นายสมชาย บุญช่วย" 
+                    class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+            </div>
+            
+            <button onclick="submitToLine()" id="btnSubmit"
+                class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold py-3 rounded-lg shadow-lg flex items-center justify-center space-x-2 transition">
+                <span>🟢 ส่งรายชื่อเข้ากลุ่ม LINE</span>
+            </button>
+        </div>
+
+        <!-- สถานะการทำงาน -->
+        <div id="statusMessage" class="mt-4 text-center text-sm hidden"></div>
+    </div>
+
+    <script>
+        async function submitToLine() {
+            const nameInput = document.getElementById('playerName');
+            const btn = document.getElementById('btnSubmit');
+            const status = document.getElementById('statusMessage');
+            
+            if (!nameInput.value.trim()) {
+                alert('กรุณากรอกชื่อก่อนส่งครับ 😊');
+                return;
+            }
+
+            // ล็อกปุ่มระหว่างส่ง
+            btn.disabled = true;
+            btn.innerText = '⏳ กำลังส่งข้อมูล...';
+            
+            try {
+                // เรียกไปยัง API ด้านหลัง (Serverless Function บน Vercel)
+                const response = await fetch('/api/send-line', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: nameInput.value })
+                });
+
+                if (response.ok) {
+                    status.innerText = '✅ ส่งรายชื่อเข้ากลุ่ม LINE สำเร็จ!';
+                    status.className = 'mt-4 text-center text-sm text-emerald-400 font-medium';
+                    nameInput.value = ''; // เคลียร์ช่องให้คนต่อไปพิมพ์ต่อได้เลย
+                } else {
+                    throw new Error('ส่งไม่สำเร็จ');
+                }
+            } catch (error) {
+                status.innerText = '❌ เกิดข้อผิดพลาด กรุณาลองใหม่';
+                status.className = 'mt-4 text-center text-sm text-red-400 font-medium';
+            } finally {
+                status.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = '🟢 ส่งรายชื่อเข้ากลุ่ม LINE';
+            }
+        }
+    </script>
+</body>
+</html>
