@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const GROUP_ID = 'C5def3270e807596d7e2d476e7c2e5004';
 
     // 🔴 วางรหัส REDIS_URL ตัวเต็มที่กด Show secret แล้วตรงนี้ครับ
-    const redisUrl = 'REDIS_URL="redis://default:QVodYczjjWuUIkeI1xziE8LzqCYzADZ9@language-megaprecise-tigerlily-30099.db.redis.io:11998"';
+    const redisUrl = 'redis://default:QVodYczjjWuUIkeI1xzieE8LzqCYzADZ9@language-megaprecise-tigerlily-30099.db.redis.io:11998';
     const redis = new Redis(redisUrl);
 
     try {
