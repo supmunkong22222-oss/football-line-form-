@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const { name } = req.body;
 
     // รหัส Token บอทไลน์ของพี่บอม
-    const CHANNEL_ACCESS_TOKEN = 'X4cZS0+Cmqx0605CyzUgJthk6LekJBvbmruhcufY/V011UstJbG95qLgV2z1BCDX/f1D5hvn06X0D0...'; 
+    const CHANNEL_ACCESS_TOKEN = 'X4cZS0+Cmqx0605CyzUgJthk6LekJBvbmruhcuFY/V01lUstJbGQ5qLgV2z1BCDX/flD5hvn06X0D07mcjNbFqo8Qr1tTsHg1fUghQKg1ln7STHNBOoVhqvHVM33Qk3ZdP/vCj3DeqGYj7SoGpqe6wdB04t89/1O/w1cDnyilFU='; 
     
     // รหัสกลุ่ม ซุ้ม สวนเส ของพี่บอม
     const GROUP_ID = 'C5def3270e807596d7e2d476e7c2e5004';
